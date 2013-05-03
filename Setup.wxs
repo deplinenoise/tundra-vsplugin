@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?> <!--
+vim: ts=2 sw=2 expandtab syntax=xml
+-->
+<?define CONNECT_CLASS_FULL_NAME_VS_2012 = "TundraExtsVs2012.TundraConnect.BuildCurrentFile " ?>
+<?define CONNECT_CLASS_FULL_NAME_VS = "TundraExtsVs2012.TundraConnect" ?>
+
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+  <Product Id="*" UpgradeCode="{8C6B2F4D-EE8A-4850-8121-ADE2506A621D}" Version="2.0.0.0" Language="1033" Name="Tundra 2.0 VS2012 Addin" Manufacturer="Andreas Fredriksson">
+
+    <Package InstallerVersion="300" Compressed="yes"/>
+    <Media Id="1" Cabinet="tundra.cab" EmbedCab="yes"/>
+
+    <Property Id="WIXUI_INSTALLDIR" Value="APPLICATIONROOTDIRECTORY" />
+    <WixVariable Id="WixUILicenseRtf" Value="gpl3.rtf" />
+    <UIRef Id="WixUI_Mondo" />
+
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="CommonAppDataFolder">
+        <Directory Id="MicrosoftDirId" Name="Microsoft">
+          <Directory Id="VisualStudioDirId" Name="VisualStudio">
+            <Directory Id="Dir11Id" Name="11.0">
+              <Directory Id="Dir80AddInsId" Name="AddIns" />
+            </Directory>
+          </Directory>
+        </Directory>
+      </Directory>
+    </Directory>
+
+    <DirectoryRef Id="Dir80AddInsId">
+      <Component Id="CMPVSEXTENSION" DiskId="1" Guid="{BE1C3B05-FC04-4726-A049-FD17DBFAC860}">
+        <File Id="EXTENSIONBINARY" Name="TundraExtsVS2012.dll" Source="TundraExtsVs2012\bin\TundraExtsVs2012.dll " Vital="yes" KeyPath="no" />
+
+      </Component>
+      <Component Id="CMPADDIN" Guid="{D493ADDA-ECE9-4042-8A30-AC9BBFD19F89}">
+        <File Id="VsIdeHostAddinFile" Vital="yes" DiskId="1" Name="TundraExtsVs2012.AddIn" Source="TundraExtsVs2012\TundraExtsVs2012.AddIn" />
+        <util:XmlFile Id="AddAssemblyElement" Action="setValue" File="[#VsIdeHostAddinFile]" ElementPath="/Extensibility/Addin/Assembly" Value="[ADDINDIR]TundraExtsVS2012.dll" Sequence="1" />
+      </Component>
+    </DirectoryRef>
+
+    <CustomAction Id="RemoveVS2012Cmds" Script="vbscript" Execute="deferred" Return="ignore" Impersonate="yes">
+      <![CDATA[
+      Set dte = CreateObject("VisualStudio.DTE.11.0")
+      For Each cmd In dte.Commands
+      If InStr(cmd, "$(var.CONNECT_CLASS_FULL_NAME_VS_2012)") <> 0 Then
+      cmd.Delete()
+      End If
+      If InStr(cmd, "$(var.CONNECT_CLASS_FULL_NAME_VS)") <> 0 Then
+      cmd.Delete()
+      End If
+      Next
+      dte.Quit()
+      ]]>
+    </CustomAction>
+
+    <InstallExecuteSequence>
+      <Custom Action="RemoveVS2012Cmds"
+        After="RemoveFiles">
+        Installed AND NOT UPGRADINGPRODUCTCODE
+      </Custom>
+    </InstallExecuteSequence>
+
+    <Feature Id="VS2012Addin" Title="Visual Studio 2012 Addin" Level="1">
+      <ComponentRef Id="CMPVSEXTENSION" />
+      <ComponentRef Id="CMPADDIN" />
+    </Feature>
+
+  </Product>
+</Wix>
