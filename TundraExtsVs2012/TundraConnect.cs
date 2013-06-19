@@ -203,6 +203,8 @@ namespace TundraExtsVs2012
             Match m = m_TundraBuildRegex.Match(cmdline);
             if (m.Success)
             {
+              m_ApplicationObject.ExecuteCommand("File.SaveAll");
+
               if (!context.Document.Saved)
                 context.Document.Save();
 
