@@ -134,8 +134,21 @@ namespace TundraExtsVs2012
       public VCNMakeTool NMakeTool;
     };
 
+    private static VCConfiguration FindVCConfiguration(VCProject project, Configuration active_cfg)
+    {
+      foreach (VCConfiguration vc_cfg in project.Configurations as IVCCollection)
+      {
+        if (vc_cfg.Platform.Name == active_cfg.PlatformName && vc_cfg.ConfigurationName == active_cfg.ConfigurationName)
+        {
+          return vc_cfg;
+        }
+      }
+
+      return null;
+    }
+
     // Figure out the prereqs needed to run tundra on a source file.
-    private bool GetContext(out ContextInfo info)
+    private bool GetContext(out ContextInfo info, out string cause)
     {
       info.Document = null;
       info.Project = null;
@@ -144,41 +157,67 @@ namespace TundraExtsVs2012
       var doc = m_ApplicationObject.ActiveDocument;
 
       if (doc == null)
+      {
+        cause = "no active document";
         return false;
+      }
 
       info.Document = doc;
 
       var proj_item = doc.ProjectItem;
       if (proj_item == null)
+      {
+        cause = "active document is not in project";
         return false;
+      }
 
       var project = proj_item.ContainingProject;
       if (project == null)
+      {
+        cause = "can't find containing project";
         return false;
+      }
 
       var vc_proj = project.Object as VCProject;
       if (null == vc_proj || vc_proj.keyword != "MakeFileProj")
+      {
+        cause = "project is not a makefile project";
         return false;
+      }
 
       info.Project = vc_proj;
 
-      var cfg = vc_proj.Configurations as IVCCollection;
-      if (null == cfg)
-        return false;
+      var active_cfg = project.ConfigurationManager.ActiveConfiguration;
 
-      var vc_cfg = cfg.Item(project.ConfigurationManager.ActiveConfiguration.ConfigurationName) as VCConfiguration;
-      if (null == vc_cfg)
+      if (null == active_cfg)
+      {
+        cause = "no active configuration (says ConfigurationManager)";
         return false;
+      }
+
+      var vc_cfg = FindVCConfiguration(vc_proj, active_cfg);
+      if (null == vc_cfg)
+      {
+        cause = "couldn't find vc configuration for " + active_cfg.ConfigurationName + "|" + active_cfg.PlatformName;
+        return false;
+      }
 
       var tools = vc_cfg.Tools as IVCCollection;
       if (null == tools)
+      {
+        cause = "couldn't enumerate VCProject tools";
         return false;
+      }
 
       VCNMakeTool nmake_tool = tools.Item("NMake Tool");
       if (null == nmake_tool)
+      {
+        cause = "couldn't find NMake Tool in project";
         return false;
+      }
 
       info.NMakeTool = nmake_tool;
+      cause = "ok";
       return true;
     }
 
@@ -196,65 +235,77 @@ namespace TundraExtsVs2012
 			{
 				if(commandName == "TundraExtsVs2012.TundraConnect.BuildCurrentFile")
 				{
-          ContextInfo context;
-          if (GetContext(out context))
+          try
           {
-            string cmdline = context.NMakeTool.BuildCommandLine;
-            Match m = m_TundraBuildRegex.Match(cmdline);
-            if (m.Success)
+            ContextInfo context;
+            string cause;
+            if (GetContext(out context, out cause))
             {
-              m_ApplicationObject.ExecuteCommand("File.SaveAll");
-
-              if (!context.Document.Saved)
-                context.Document.Save();
-
-              var tundra_path = m.Groups[1].ToString();
-              var dir = m.Groups[2].ToString();
-              var config = m.Groups[3].ToString();
-              var full_file_name = context.Document.FullName;
-
-              try
+              string cmdline = context.NMakeTool.BuildCommandLine;
+              Match m = m_TundraBuildRegex.Match(cmdline);
+              if (m.Success)
               {
-                using (System.Diagnostics.Process p = new System.Diagnostics.Process())
+                m_ApplicationObject.ExecuteCommand("File.SaveAll");
+
+                if (!context.Document.Saved)
+                  context.Document.Save();
+
+                var tundra_path = m.Groups[1].ToString();
+                var dir = m.Groups[2].ToString();
+                var config = m.Groups[3].ToString();
+                var full_file_name = context.Document.FullName;
+
+                try
                 {
-                  p.StartInfo.UseShellExecute = false;
-                  p.StartInfo.CreateNoWindow = true;
-                  p.StartInfo.RedirectStandardOutput = true;
-                  p.StartInfo.RedirectStandardError = true;
-                  p.StartInfo.WorkingDirectory = context.Project.ProjectDirectory;
-                  p.StartInfo.FileName = tundra_path;
-                  p.StartInfo.Arguments = "-C " + dir + " \"" + full_file_name + "\" " + config;
+                  using (System.Diagnostics.Process p = new System.Diagnostics.Process())
+                  {
+                    p.StartInfo.UseShellExecute = false;
+                    p.StartInfo.CreateNoWindow = true;
+                    p.StartInfo.RedirectStandardOutput = true;
+                    p.StartInfo.RedirectStandardError = true;
+                    p.StartInfo.WorkingDirectory = context.Project.ProjectDirectory;
+                    p.StartInfo.FileName = tundra_path;
+                    p.StartInfo.Arguments = "-C " + dir + " \"" + full_file_name + "\" " + config;
 
-                  p.OutputDataReceived += OnOutputDataReceived;
-                  p.ErrorDataReceived += OnOutputDataReceived;
+                    p.OutputDataReceived += OnOutputDataReceived;
+                    p.ErrorDataReceived += OnOutputDataReceived;
 
-                  m_TundraPane.Activate();
-                  m_TundraPane.Clear();
-                  m_OutputWindow.Parent.Activate();
+                    m_TundraPane.Activate();
+                    m_TundraPane.Clear();
+                    m_OutputWindow.Parent.Activate();
 
-                  m_TundraPane.OutputString(tundra_path);
-                  m_TundraPane.OutputString(" ");
-                  m_TundraPane.OutputString(p.StartInfo.Arguments);
-                  m_TundraPane.OutputString("\n");
+                    m_TundraPane.OutputString(tundra_path);
+                    m_TundraPane.OutputString(" ");
+                    m_TundraPane.OutputString(p.StartInfo.Arguments);
+                    m_TundraPane.OutputString("\n");
 
-                  p.Start();
-                  p.BeginOutputReadLine();
-                  p.BeginErrorReadLine();
-                  p.WaitForExit();
+                    p.Start();
+                    p.BeginOutputReadLine();
+                    p.BeginErrorReadLine();
+                    p.WaitForExit();
 
-                  m_TundraPane.OutputString(String.Format("Exit code: {0}\n", p.ExitCode));
+                    m_TundraPane.OutputString(String.Format("Exit code: {0}\n", p.ExitCode));
+                  }
+                }
+                catch (Exception ex)
+                {
+                  m_TundraPane.OutputString("Failed to launch Tundra\n");
+                  m_TundraPane.OutputString(ex.Message + "\n");
                 }
               }
-              catch (Exception ex)
-              {
-                m_TundraPane.OutputString("Failed to launch Tundra\n");
-                m_TundraPane.OutputString(ex.Message + "\n");
-              }
+            }
+            else
+            {
+              m_TundraPane.OutputString(String.Format("Can't build file with Tundra: {0}", cause));
+              m_TundraPane.OutputString(String.Format("Dispatching to Build.Compile..."));
+              m_ApplicationObject.ExecuteCommand("Build.Compile");
             }
           }
-          else
+          catch (Exception ex)
           {
-            m_ApplicationObject.ExecuteCommand("Build.Compile");
+            m_TundraPane.OutputString("Failed with exception");
+            m_TundraPane.OutputString(ex.Message + "\n");
+            m_TundraPane.OutputString(ex.StackTrace + "\n");
           }
 
 					handled = true;
