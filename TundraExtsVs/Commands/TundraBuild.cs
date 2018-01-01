@@ -93,14 +93,14 @@ namespace TundraExts.Commands
 							}
 
 							buildPane.Clear();
-							buildPane.OutputString(string.Format("------ {0} started: Project{1}: {2}, Configuration: {3} ------", task, projects, projectCount != 0 ? "(s)" : "", config));
+							buildPane.OutputString(string.Format("------ {0} started: Project{1}: {2}, Configuration: {3} ------\n", task, projects, projectCount != 0 ? "(s)" : "", config));
 
 							int result = Package.LaunchTundra(tundraPath, dir, arguments);
 
 							if (result == 0)
-								buildPane.OutputString(string.Format("========== {0}: {1} succeeded ==========", task, projectCount));
+								buildPane.OutputString(string.Format("========== {0}: {1} succeeded ==========\n", task, projectCount));
 							else
-								buildPane.OutputString(string.Format("========== {0}: Failed: {1} ==========", task, result));
+								buildPane.OutputString(string.Format("========== {0}: Failed: {1} ==========\n", task, result));
 						}
 						catch (Exception ex)
 						{

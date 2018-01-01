@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <feed xmlns="http://www.w3.org/2005/Atom">
   <title type="text" />
-  <id>uuid:bcecded5-97c8-4d24-96f1-7d9e16652433;id=1</id>
-  <updated>2017-12-31T21:27:00Z</updated>
+  <id>uuid:da2984f9-5443-4a0b-a1d1-fe2a7571ec06;id=1</id>
+  <updated>2017-12-31T22:05:00-08:00</updated>
   <entry>
 	<id>TundraExtsVs.a71301bd-9e02-43c8-834b-3b2c7c343fda</id>
 	<title type="text">Tundra Visual Studio Extension</title>
 	<summary type="text">Tundra Visual Studio Extension</summary>
 	<published>2017-12-31T21:27:00-08:00</published>
-	<updated>2017-12-31T21:27:00-08:00</updated>
+	<updated>2017-12-31T22:05:00-08:00</updated>
 	<author>
 	  <name>Andreas Fredriksson</name>
 	</author>
