@@ -1,0 +1,88 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CommandTable xmlns="http://schemas.microsoft.com/VisualStudio/2005-10-18/CommandTable" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <Extern href="stdidcmd.h"/>
+  <Extern href="vsshlids.h"/>
+
+  <Commands package="GuidTundraPackage">
+
+	<Menus>
+
+	  <Menu guid="GuidTundraPackageCmdSet" id="TundraMenu" priority="0x700" type="Menu">
+		<Parent guid="guidSHLMainMenu" id="IDG_VS_MM_TOOLSADDINS" />
+		<CommandFlag>DefaultInvisible</CommandFlag>
+		<CommandFlag>DynamicVisibility</CommandFlag>
+		<Strings>
+		  <ButtonText>Tundra</ButtonText>
+		  <CommandName>Tundra</CommandName>
+		</Strings>
+	  </Menu>
+
+	</Menus>
+
+	<Groups>
+
+	  <Group guid="GuidTundraPackageCmdSet" id="TundraMenuGroup" priority="0x0600">
+		<Parent guid="GuidTundraPackageCmdSet" id="TundraMenu"/>
+	  </Group>
+
+	</Groups>
+
+	<Buttons>
+
+	  <Button guid="GuidTundraPackageCmdSet" id="TundraCompileId" priority="0x0100" type="Button">
+		<Parent guid="GuidTundraPackageCmdSet" id="TundraMenuGroup" />
+		<Strings>
+		  <ButtonText>Compile</ButtonText>
+		  <ToolTipText>Compiles the active file</ToolTipText>
+		</Strings>
+	  </Button>
+
+	  <Button guid="GuidTundraPackageCmdSet" id="TundraBuildSolutionId" priority="0x0200" type="Button">
+		<Parent guid="GuidTundraPackageCmdSet" id="TundraMenuGroup" />
+		<Strings>
+		  <ButtonText>Build Solution</ButtonText>
+		  <ToolTipText>Builds all Tundra projects in the solution</ToolTipText>
+		</Strings>
+	  </Button>
+
+	  <Button guid="GuidTundraPackageCmdSet" id="TundraRebuildSolutionId" priority="0x0300" type="Button">
+		<Parent guid="GuidTundraPackageCmdSet" id="TundraMenuGroup" />
+		<Strings>
+		  <ButtonText>Rebuild Solution</ButtonText>
+		  <ToolTipText>Rebuilds all Tundra projects in the solution</ToolTipText>
+		</Strings>
+	  </Button>
+
+	  <Button guid="GuidTundraPackageCmdSet" id="TundraCleanSolutionId" priority="0x0400" type="Button">
+		<Parent guid="GuidTundraPackageCmdSet" id="TundraMenuGroup" />
+		<Strings>
+		  <ButtonText>Clean Solution</ButtonText>
+		  <ToolTipText>Cleans all Tundra projects in the solution</ToolTipText>
+		</Strings>
+	  </Button>
+
+	</Buttons>
+
+  </Commands>
+
+  <KeyBindings>
+	<KeyBinding guid="GuidTundraPackageCmdSet" id="TundraCompileId" editor="guidVSStd97" mod1="ALT SHIFT" key1="B" />
+  </KeyBindings>
+
+  <Symbols>
+
+	<GuidSymbol name="GuidTundraPackage" value="{119242f7-44ba-4658-b26b-666721dabfae}" />
+	<GuidSymbol name="GuidOptionsPageGeneral" value="{73319368-4511-4987-887C-165A58AF5169}" />
+
+	<GuidSymbol name="GuidTundraPackageCmdSet" value="{cf40d256-0233-4221-ab96-1e5710210a14}">
+	  <IDSymbol name="TundraMenuGroup" value="0x1020" />
+	  <IDSymbol name="TundraMenu" value="0x1021"/>
+	  <IDSymbol name="TundraCompileId" value="0x0100" />
+	  <IDSymbol name="TundraBuildSolutionId" value="0x0101" />
+	  <IDSymbol name="TundraRebuildSolutionId" value="0x0102" />
+	  <IDSymbol name="TundraCleanSolutionId" value="0x0103" />
+	</GuidSymbol>
+
+  </Symbols>
+</CommandTable>
