@@ -12,7 +12,7 @@ source files in a NMake project as it doesn't run any commands itself.
 It also provides convenience commands for building/re-building/cleaning the
 solution using Tundra.
 
-A prebuilt VSIX can be downloaded [here](https://github.com/katacode/tundra-vsplugin/raw/master/Bin/TundraExtsVs.vsix).
+A prebuilt VSIX can be downloaded [here](https://github.com/katacode/tundra-vsplugin/raw/master/Deployed/TundraExtsVs.vsix).
 
 License and Copyright
 -----------------------------------------------------------------------------
