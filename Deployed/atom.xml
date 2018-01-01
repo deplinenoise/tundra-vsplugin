@@ -12,12 +12,10 @@
 	<author>
 	  <name>Andreas Fredriksson</name>
 	</author>
-	<!--<link rel="icon" href="VSIXImages/SelectionHighlight..a14874d2-8199-4a60-af8a-11d6447813aa_Icon_SelectionHighlightIcon.jpg" />
-	<link rel="previewimage" href="VSIXImages/SelectionHighlight..a14874d2-8199-4a60-af8a-11d6447813aa_PreviewImage_SelectionHighlight.jpg" />-->
 	<content type="application/octet-stream" src="TundraExtsVs.vsix" />
 	<Vsix xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://schemas.microsoft.com/developer/vsx-syndication-schema/2010">
 	  <Id>TundraExtsVs.a71301bd-9e02-43c8-834b-3b2c7c343fda</Id>
-	  <Version>2.0</Version>
+	  <Version>2.0.0</Version>
 	  <References />
 	  <Rating xsi:nil="true" />
 	  <RatingCount xsi:nil="true" />

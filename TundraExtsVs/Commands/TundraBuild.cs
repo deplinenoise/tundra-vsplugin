@@ -87,13 +87,19 @@ namespace TundraExts.Commands
 							}
 							else
 							{
-								projects = m.Groups[4].ToString().Trim();
-								projectCount = projects.Split(new char[] { ' ' }).Length;
-								arguments = string.Format("{0} {1}", config, projects);
+								var projs = m.Groups[4].ToString().Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+								projects = string.Join(" ", projs);
+								projectCount = projs.Length;
+								string arg = string.Empty;
+								if (task == BuildTask.Clean)
+									arg = "--clean";
+								else if (task == BuildTask.Rebuild)
+									arg = "--rebuild";
+								arguments = string.Format("{0} {1} {2}", arg, config, m.Groups[4].ToString());
 							}
 
 							buildPane.Clear();
-							buildPane.OutputString(string.Format("------ {0} started: Project{1}: {2}, Configuration: {3} ------\n", task, projects, projectCount != 0 ? "(s)" : "", config));
+							buildPane.OutputString(string.Format("------ {0} started: Project{1}: {2}, Configuration: {3} ------\n", task, projectCount != 1 ? "(s)" : "", projects, config));
 
 							int result = Package.LaunchTundra(tundraPath, dir, arguments);
 
