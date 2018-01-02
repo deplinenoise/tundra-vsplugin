@@ -6,59 +6,66 @@
 
   <Commands package="GuidTundraPackage">
 
-	<Menus>
-
-	  <Menu guid="GuidTundraPackageCmdSet" id="TundraMenu" priority="0x700" type="Menu">
-		<Parent guid="guidSHLMainMenu" id="IDG_VS_MM_TOOLSADDINS" />
-		<CommandFlag>DefaultInvisible</CommandFlag>
-		<CommandFlag>DynamicVisibility</CommandFlag>
-		<Strings>
-		  <ButtonText>Tundra</ButtonText>
-		  <CommandName>Tundra</CommandName>
-		</Strings>
-	  </Menu>
-
-	</Menus>
-
 	<Groups>
 
-	  <Group guid="GuidTundraPackageCmdSet" id="TundraMenuGroup" priority="0x0600">
-		<Parent guid="GuidTundraPackageCmdSet" id="TundraMenu"/>
+	  <Group guid="GuidTundraPackageCmdSet" id="TundraBuildMenuSolutionGroup" priority="0x0000">
+		<Parent guid="guidSHLMainMenu" id="IDM_VS_MENU_BUILD"/>
 	  </Group>
 
+	  <Group guid="GuidTundraPackageCmdSet" id="TundraBuildMenuCompileGroup" priority="0x0900">
+		<Parent guid="guidSHLMainMenu" id="IDM_VS_MENU_BUILD"/>
+	  </Group>
+	  
 	</Groups>
 
 	<Buttons>
 
 	  <Button guid="GuidTundraPackageCmdSet" id="TundraCompileId" priority="0x0100" type="Button">
-		<Parent guid="GuidTundraPackageCmdSet" id="TundraMenuGroup" />
+		<Parent guid="GuidTundraPackageCmdSet" id="TundraBuildMenuCompileGroup" />
+		<CommandFlag>TextChanges</CommandFlag>
+		<CommandFlag>DynamicVisibility</CommandFlag>
+		<CommandFlag>DefaultInvisible</CommandFlag>
 		<Strings>
-		  <ButtonText>Compile</ButtonText>
-		  <ToolTipText>Compiles the active file</ToolTipText>
+		  <ButtonText>Set in TundraBuild.cs</ButtonText>
+		  <CanonicalName>.Tundra.Compile</CanonicalName>
+		  <LocCanonicalName>.Tundra.Compile</LocCanonicalName>
 		</Strings>
 	  </Button>
 
-	  <Button guid="GuidTundraPackageCmdSet" id="TundraBuildSolutionId" priority="0x0200" type="Button">
-		<Parent guid="GuidTundraPackageCmdSet" id="TundraMenuGroup" />
+	  <Button guid="GuidTundraPackageCmdSet" id="TundraBuildSolutionId" priority="0x0100" type="Button">
+		<Parent guid="GuidTundraPackageCmdSet" id="TundraBuildMenuSolutionGroup" />
+		<CommandFlag>TextChanges</CommandFlag>
+		<CommandFlag>DynamicVisibility</CommandFlag>
+		<CommandFlag>DefaultInvisible</CommandFlag>
+		<CommandFlag>TextMenuUseButton</CommandFlag>
 		<Strings>
-		  <ButtonText>Build Solution</ButtonText>
-		  <ToolTipText>Builds all Tundra projects in the solution</ToolTipText>
+		  <ButtonText>Set in TundraBuild.cs</ButtonText>
+		  <CanonicalName>.Tundra.BuildSolution</CanonicalName>
+		  <LocCanonicalName>.Tundra.BuildSolution</LocCanonicalName>
 		</Strings>
 	  </Button>
 
-	  <Button guid="GuidTundraPackageCmdSet" id="TundraRebuildSolutionId" priority="0x0300" type="Button">
-		<Parent guid="GuidTundraPackageCmdSet" id="TundraMenuGroup" />
+	  <Button guid="GuidTundraPackageCmdSet" id="TundraRebuildSolutionId" priority="0x0200" type="Button">
+		<Parent guid="GuidTundraPackageCmdSet" id="TundraBuildMenuSolutionGroup" />
+		<CommandFlag>TextChanges</CommandFlag>
+		<CommandFlag>DynamicVisibility</CommandFlag>
+		<CommandFlag>DefaultInvisible</CommandFlag>
 		<Strings>
-		  <ButtonText>Rebuild Solution</ButtonText>
-		  <ToolTipText>Rebuilds all Tundra projects in the solution</ToolTipText>
+		  <ButtonText>Set in TundraBuild.cs</ButtonText>
+		  <CanonicalName>.Tundra.RebuildSolution</CanonicalName>
+		  <LocCanonicalName>.Tundra.RebuildSolution</LocCanonicalName>
 		</Strings>
 	  </Button>
 
-	  <Button guid="GuidTundraPackageCmdSet" id="TundraCleanSolutionId" priority="0x0400" type="Button">
-		<Parent guid="GuidTundraPackageCmdSet" id="TundraMenuGroup" />
+	  <Button guid="GuidTundraPackageCmdSet" id="TundraCleanSolutionId" priority="0x0300" type="Button">
+		<Parent guid="GuidTundraPackageCmdSet" id="TundraBuildMenuSolutionGroup" />
+		<CommandFlag>TextChanges</CommandFlag>
+		<CommandFlag>DynamicVisibility</CommandFlag>
+		<CommandFlag>DefaultInvisible</CommandFlag>
 		<Strings>
-		  <ButtonText>Clean Solution</ButtonText>
-		  <ToolTipText>Cleans all Tundra projects in the solution</ToolTipText>
+		  <ButtonText>Set in TundraBuild.cs</ButtonText>
+		  <CanonicalName>.Tundra.CleanSolution</CanonicalName>
+		  <LocCanonicalName>.Tundra.CleanSolution</LocCanonicalName>
 		</Strings>
 	  </Button>
 
@@ -76,8 +83,8 @@
 	<GuidSymbol name="GuidOptionsPageGeneral" value="{73319368-4511-4987-887C-165A58AF5169}" />
 
 	<GuidSymbol name="GuidTundraPackageCmdSet" value="{cf40d256-0233-4221-ab96-1e5710210a14}">
-	  <IDSymbol name="TundraMenuGroup" value="0x1020" />
-	  <IDSymbol name="TundraMenu" value="0x1021"/>
+	  <IDSymbol name="TundraBuildMenuSolutionGroup" value="0x1020" />
+	  <IDSymbol name="TundraBuildMenuCompileGroup" value="0x1022" />
 	  <IDSymbol name="TundraCompileId" value="0x0100" />
 	  <IDSymbol name="TundraBuildSolutionId" value="0x0101" />
 	  <IDSymbol name="TundraRebuildSolutionId" value="0x0102" />

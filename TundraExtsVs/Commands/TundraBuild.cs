@@ -1,6 +1,8 @@
 ﻿using EnvDTE;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.VCProjectEngine;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Text.RegularExpressions;
 
@@ -10,20 +12,43 @@ namespace TundraExts.Commands
 	{
 		private readonly TundraPackage Package;
 
+		private static Dictionary<int, string> s_cmdNames = new Dictionary<int, string>();
+
 		private TundraBuild(TundraPackage package)
 		{
 			Package = package;
 
-			var mi = new MenuCommand((s, e) => Execute(BuildTask.Compile), new CommandID(PackageGuids.GuidTundraPackageCmdSet, PackageIds.TundraCompileId));
-			Package.CommandService.AddCommand(mi);
+			EventHandler queryStatusHandler = (object s, EventArgs e) =>
+			{
+				var mc = s as OleMenuCommand;
+				mc.Visible = Package.LoadedProjects.GetEnumerator().MoveNext();
+				if (!mc.Visible)
+					return;
 
-			var build = new MenuCommand((s, e) => Execute(BuildTask.Build), new CommandID(PackageGuids.GuidTundraPackageCmdSet, PackageIds.TundraBuildSolutionId));
+				mc.Text = string.Format("{0}{1}",
+					s_cmdNames.ContainsKey(mc.CommandID.ID) ? s_cmdNames[mc.CommandID.ID] : mc.CommandID.ToString(),
+					Package.IsTundraSolution() ? " with Tundra" : ""
+					);
+			};
+
+			var compile = new OleMenuCommand((s, e) => Execute(BuildTask.Compile), new CommandID(PackageGuids.GuidTundraPackageCmdSet, PackageIds.TundraCompileId));
+			s_cmdNames.Add(PackageIds.TundraCompileId, "Compile");
+			compile.BeforeQueryStatus += queryStatusHandler;
+			Package.CommandService.AddCommand(compile);
+
+			var build = new OleMenuCommand((s, e) => Execute(BuildTask.Build), new CommandID(PackageGuids.GuidTundraPackageCmdSet, PackageIds.TundraBuildSolutionId));
+			s_cmdNames.Add(PackageIds.TundraBuildSolutionId, "Build Solution");
+			build.BeforeQueryStatus += queryStatusHandler;
 			Package.CommandService.AddCommand(build);
 
-			var rebuild = new MenuCommand((s, e) => Execute(BuildTask.Rebuild), new CommandID(PackageGuids.GuidTundraPackageCmdSet, PackageIds.TundraRebuildSolutionId));
+			var rebuild = new OleMenuCommand((s, e) => Execute(BuildTask.Rebuild), new CommandID(PackageGuids.GuidTundraPackageCmdSet, PackageIds.TundraRebuildSolutionId));
+			s_cmdNames.Add(PackageIds.TundraRebuildSolutionId, "Rebuild Solution");
+			rebuild.BeforeQueryStatus += queryStatusHandler;
 			Package.CommandService.AddCommand(rebuild);
 
-			var clean = new MenuCommand((s, e) => Execute(BuildTask.Clean), new CommandID(PackageGuids.GuidTundraPackageCmdSet, PackageIds.TundraCleanSolutionId));
+			var clean = new OleMenuCommand((s, e) => Execute(BuildTask.Clean), new CommandID(PackageGuids.GuidTundraPackageCmdSet, PackageIds.TundraCleanSolutionId));
+			s_cmdNames.Add(PackageIds.TundraCleanSolutionId, "Clean Solution");
+			clean.BeforeQueryStatus += queryStatusHandler;
 			Package.CommandService.AddCommand(clean);
 		}
 
@@ -98,15 +123,32 @@ namespace TundraExts.Commands
 								arguments = string.Format("{0} {1} {2}", arg, config, m.Groups[4].ToString());
 							}
 
+							var p = Package.CreateTundraProcess(tundraPath, dir, arguments);
+							if (p == null)
+								throw new Exception("Couldn't create process");
+
+							p.EnableRaisingEvents = true;
+							p.OutputDataReceived += (s, e) => buildPane.OutputString(e.Data + "\n");
+							p.ErrorDataReceived += (s, e) => buildPane.OutputString(e.Data + "\n");
+							p.Exited += (s, e) =>
+							{
+								if (!p.HasExited)
+									throw new Exception("Tundra process should've exited already!");
+								if (p.ExitCode == 0)
+									buildPane.OutputString(string.Format("========== {0}: {1} succeeded ==========\n", task, projectCount));
+								else
+									buildPane.OutputString(string.Format("========== {0}: Failed: {1} ==========\n", task, p.ExitCode));
+								p.Dispose();
+							};
+
 							buildPane.Clear();
 							buildPane.OutputString(string.Format("------ {0} started: Project{1}: {2}, Configuration: {3} ------\n", task, projectCount != 1 ? "(s)" : "", projects, config));
+							buildPane.Activate();
+							Package.DTE.ToolWindows.OutputWindow.Parent.Activate();
 
-							int result = Package.LaunchTundra(tundraPath, dir, arguments);
-
-							if (result == 0)
-								buildPane.OutputString(string.Format("========== {0}: {1} succeeded ==========\n", task, projectCount));
-							else
-								buildPane.OutputString(string.Format("========== {0}: Failed: {1} ==========\n", task, result));
+							p.Start();
+							p.BeginOutputReadLine();
+							p.BeginErrorReadLine();
 						}
 						catch (Exception ex)
 						{

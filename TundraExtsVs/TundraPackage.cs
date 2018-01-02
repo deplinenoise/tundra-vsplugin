@@ -33,16 +33,12 @@ namespace TundraExts
 
 		#region Package Members
 
-		SolutionEventsSink m_solutionEventsSink;
-		OleMenuCommand m_menuCommand;
-
 		/// <summary>
 		/// Initialization of the package; this method is called right after the package is sited, so this is the place
 		/// where you can put all the initialization code that rely on services provided by VisualStudio.
 		/// </summary>
 		protected override void Initialize()
 		{
-			TundraOutputPane = CreatePane(OutputPaneGuid, "Tundra", true, false);
 			BuildOutputPane = GetPane(VSConstants.OutputWindowPaneGuid.BuildOutputPane_guid);
 
 			DTE = (DTE2)GetService(typeof(DTE));
@@ -51,15 +47,6 @@ namespace TundraExts
 
 			if (CommandService != null)
 			{
-				m_solutionEventsSink = new SolutionEventsSink();
-				m_solutionEventsSink.AfterCloseSolution += () => { RefreshTundraMenuVisibility(); return VSConstants.S_OK; };
-				m_solutionEventsSink.AfterOpenSolution += (n) => { RefreshTundraMenuVisibility(); return VSConstants.S_OK; };
-				m_solutionEventsSink.Hook(SolutionService);
-
-				m_menuCommand = new OleMenuCommand((s, e) => { }, new CommandID(PackageGuids.GuidTundraPackageCmdSet, PackageIds.TundraMenu));
-				m_menuCommand.BeforeQueryStatus += (s, e) => RefreshTundraMenuVisibility();
-				CommandService.AddCommand(m_menuCommand);
-
 				// Initialize commands
 				Commands.TundraBuild.Initialize(this);
 			}
@@ -72,13 +59,7 @@ namespace TundraExts
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing)
-			{
-				CommandService.RemoveCommand(m_menuCommand);
-
-				m_solutionEventsSink.Unhook(SolutionService);
-
 				DeletePane(OutputPaneGuid);
-			}
 
 			base.Dispose(disposing);
 		}
@@ -185,9 +166,7 @@ namespace TundraExts
 				IVsHierarchy[] hierarchy = new IVsHierarchy[1] { null };
 				uint fetched = 0;
 				for (enumerator.Reset(); enumerator.Next(1, hierarchy, out fetched) == VSConstants.S_OK && fetched == 1;)
-				{
 					yield return (IVsProject)hierarchy[0];
-				}
 			}
 		}
 
@@ -200,7 +179,7 @@ namespace TundraExts
 			return null;
 		}
 
-		private void RefreshTundraMenuVisibility()
+		public bool IsTundraSolution()
 		{
 			foreach (var it in LoadedProjects)
 			{
@@ -208,14 +187,11 @@ namespace TundraExts
 				if (proj != null)
 				{
 					if (IsTundraProject(proj))
-					{
-						m_menuCommand.Visible = true;
-						return;
-					}
+						return true;
 				}
 			}
 
-			m_menuCommand.Visible = false;
+			return false;
 		}
 
 		public static Regex TundraBuildRegex = new Regex("^(\"?.*?tundra2\\.exe\"?)\\s+-C\\s+(\"?[^\"]+\"?).*?([\\w_]+-[\\w_]+-[\\w_]+-[\\w_]+)(.*)$");
@@ -224,7 +200,17 @@ namespace TundraExts
 		public DTE2 DTE { get; private set; }
 		public OleMenuCommandService CommandService { get; private set; }
 		public IVsSolution SolutionService { get; private set; }
-		public IVsOutputWindowPane TundraOutputPane { get; private set; }
+
+		IVsOutputWindowPane m_tundraOutputPane;
+		public IVsOutputWindowPane TundraOutputPane
+		{
+			get
+			{
+				if (m_tundraOutputPane == null)
+					m_tundraOutputPane = CreatePane(OutputPaneGuid, "Tundra", true, false);
+				return m_tundraOutputPane;
+			}
+		}
 
 		IVsOutputWindowPane m_buildPane;
 		public IVsOutputWindowPane BuildOutputPane
@@ -265,37 +251,18 @@ namespace TundraExts
 			service.DeletePane(ref paneGuid);
 		}
 
-		internal int LaunchTundra(string tundraPath, string workingDir, string arguments, bool clearPane = false, bool showCommand = false)
+		internal System.Diagnostics.Process CreateTundraProcess(string tundraPath, string workingDir, string arguments)
 		{
-			using (System.Diagnostics.Process p = new System.Diagnostics.Process())
-			{
-				p.StartInfo.UseShellExecute = false;
-				p.StartInfo.CreateNoWindow = true;
-				p.StartInfo.RedirectStandardOutput = true;
-				p.StartInfo.RedirectStandardError = true;
-				p.StartInfo.WorkingDirectory = workingDir;
-				p.StartInfo.FileName = tundraPath;
-				p.StartInfo.Arguments = string.Format("-C {0} {1}", workingDir, arguments);
+			System.Diagnostics.Process p = new System.Diagnostics.Process();
+			p.StartInfo.UseShellExecute = false;
+			p.StartInfo.CreateNoWindow = true;
+			p.StartInfo.RedirectStandardOutput = true;
+			p.StartInfo.RedirectStandardError = true;
+			p.StartInfo.WorkingDirectory = workingDir;
+			p.StartInfo.FileName = tundraPath;
+			p.StartInfo.Arguments = string.Format("-C {0} {1}", workingDir, arguments);
 
-				var pane = BuildOutputPane;
-				p.OutputDataReceived += (s, e) => pane.OutputStringThreadSafe(e.Data + "\n");
-				p.ErrorDataReceived += (s, e) => pane.OutputStringThreadSafe(e.Data + "\n");
-
-				pane.Activate();
-				if (clearPane)
-					pane.Clear();
-				DTE.ToolWindows.OutputWindow.Parent.Activate();
-
-				if (showCommand)
-					pane.OutputString(string.Format("{0} {1}\n", p.StartInfo.FileName, p.StartInfo.Arguments));
-
-				p.Start();
-				p.BeginOutputReadLine();
-				p.BeginErrorReadLine();
-				p.WaitForExit();
-
-				return p.ExitCode;
-			}
+			return p;
 		}
 	}
 }

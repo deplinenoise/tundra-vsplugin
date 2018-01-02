@@ -24,8 +24,8 @@ namespace TundraExts
     /// </summary>
     internal sealed partial class PackageIds
     {
-        public const int TundraMenuGroup = 0x1020;
-        public const int TundraMenu = 0x1021;
+        public const int TundraBuildMenuSolutionGroup = 0x1020;
+        public const int TundraBuildMenuCompileGroup = 0x1022;
         public const int TundraCompileId = 0x0100;
         public const int TundraBuildSolutionId = 0x0101;
         public const int TundraRebuildSolutionId = 0x0102;
