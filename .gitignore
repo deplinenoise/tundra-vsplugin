@@ -1,2 +1,4 @@
-TundraVS2012.msi
-*.suo
+.vs
+packages
+**/obj
+TundraExtsVs/bin
