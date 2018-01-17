@@ -13,9 +13,9 @@ It also provides convenience commands for building/re-building/cleaning the
 solution using Tundra. These commands will fall back on the regular VS commands
 if the current solution does not contain Tundra projects.
 
-A prebuilt VSIX can be downloaded [here](https://github.com/katacode/tundra-vsplugin/raw/master/Deployed/TundraExtsVs.vsix).
+A prebuilt VSIX can be downloaded [here](https://github.com/deplinenoise/tundra-vsplugin/raw/master/Deployed/TundraExtsVs.vsix).
 It's also possible to add a custom extension gallery in Visual Studio using
-[this URL](https://raw.githubusercontent.com/katacode/tundra-vsplugin/master/Deployed/atom.xml) to get updates automatically.
+[this URL](https://raw.githubusercontent.com/deplinenoise/tundra-vsplugin/master/Deployed/atom.xml) to get updates automatically.
 
 License and Copyright
 -----------------------------------------------------------------------------
