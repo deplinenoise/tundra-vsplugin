@@ -4,6 +4,7 @@ using System.ComponentModel.Design;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
+using System.Threading;
 using EnvDTE;
 using EnvDTE80;
 using Microsoft.VisualStudio;
@@ -13,15 +14,15 @@ using Microsoft.VisualStudio.VCProjectEngine;
 
 namespace TundraExts
 {
-	[PackageRegistration(UseManagedResourcesOnly = true)]
+    [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
 	[InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)] // Info on this package for Help/About
 	[ProvideMenuResource("Menus.ctmenu", 1)]
 	[Guid(PackageGuids.GuidTundraPackageString)]
 	//[ProvideOptionPageAttribute(typeof(OptionsPageGeneral), "Tundra", "General", 100, 101, true, new string[] { "General options for Tundra Extension" })]
 	//[ProvideProfileAttribute(typeof(OptionsPageGeneral), "Tundra", "General Options", 100, 101, true, DescriptionResourceID = 100)]
-	[ProvideAutoLoad(VSConstants.UICONTEXT.NoSolution_string)]
+	[ProvideAutoLoad(VSConstants.UICONTEXT.NoSolution_string, PackageAutoLoadFlags.BackgroundLoad)]
 	[SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "pkgdef, VS and vsixmanifest are valid VS terms")]
-	public sealed class TundraPackage : Package
+	public sealed class TundraPackage : AsyncPackage
 	{
 		public TundraPackage()
 		{
@@ -37,11 +38,13 @@ namespace TundraExts
 		/// Initialization of the package; this method is called right after the package is sited, so this is the place
 		/// where you can put all the initialization code that rely on services provided by VisualStudio.
 		/// </summary>
-		protected override void Initialize()
+		protected override async System.Threading.Tasks.Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
 		{
-			BuildOutputPane = GetPane(VSConstants.OutputWindowPaneGuid.BuildOutputPane_guid);
+            await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
 
-			DTE = (DTE2)GetService(typeof(DTE));
+            BuildOutputPane = GetPane(VSConstants.OutputWindowPaneGuid.BuildOutputPane_guid);
+
+            DTE = (DTE2)GetService(typeof(DTE));
 			CommandService = GetService(typeof(IMenuCommandService)) as OleMenuCommandService;
 			SolutionService = GetService(typeof(SVsSolution)) as IVsSolution;
 
@@ -52,8 +55,6 @@ namespace TundraExts
 			}
 			else
 				TundraOutputPane.OutputString("Failed to register commands!\n");
-
-			base.Initialize();
 		}
 
 		protected override void Dispose(bool disposing)

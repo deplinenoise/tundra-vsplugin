@@ -4,12 +4,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("TundraExtsVs")]
+[assembly: AssemblyTitle("Tundra VS Extension")]
 [assembly: AssemblyDescription("Tundra interop extensions for Visual Studio")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("TundraExtsVs")]
-[assembly: AssemblyCopyright("(c) 2013-2017 Andreas Fredriksson")]
+[assembly: AssemblyCopyright("(c) 2013-2021 Andreas Fredriksson")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
